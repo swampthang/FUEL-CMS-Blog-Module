@@ -67,7 +67,7 @@ class Blog_comments_model extends Base_module_model {
 		
 		$post_title = '';
 
-		$post_options = $CI->blog_posts_model->options_list('id', 'title', array(), 'post_date desc');
+		$post_options = $CI->blog_posts_model->options_list('id', 'title', array(), 'publish_date desc');
 		if (empty($post_options))
 		{
 			$fields = array();
@@ -216,7 +216,7 @@ class Blog_comments_model extends Base_module_model {
 		$this->db->select($this->_tables['blog_comments'].'.*, '.$this->_tables['blog_posts'].'.id as post_id, 
 		'.$this->_tables['blog_posts'].'.title as title, '.$this->_tables['blog_posts'].'.slug as slug,
 		'.$this->_tables['blog_posts'].'.published AS post_published', FALSE);
-		$this->db->select('YEAR('.$this->_tables['blog_posts'].'.post_date) as year, DATE_FORMAT('.$this->_tables['blog_posts'].'.post_date, "%m") as month, DATE_FORMAT('.$this->_tables['blog_posts'].'.post_date, "%d") as day,', FALSE);
+		$this->db->select('YEAR('.$this->_tables['blog_posts'].'.publish_date) as year, DATE_FORMAT('.$this->_tables['blog_posts'].'.publish_date, "%m") as month, DATE_FORMAT('.$this->_tables['blog_posts'].'.publish_date, "%d") as day,', FALSE);
 		$this->db->join($this->_tables['blog_posts'], $this->_tables['blog_comments'].'.post_id = '.$this->_tables['blog_posts'].'.id', 'inner');
 	}
 
@@ -226,6 +226,7 @@ class Blog_comment_model extends Base_module_record {
 
 	public $title;
 	public $slug;
+	public $spam_checked = FALSE;
 
 	// not using filtered fields because we don't want any PHP function translation'
 	function get_content_formatted()
@@ -237,7 +238,8 @@ class Blog_comment_model extends Base_module_record {
 	
 	function get_post()
 	{
-		return $this->lazy_load('post_id', array(BLOG_FOLDER => 'blog_posts_model'));
+		$model = $this->_CI->fuel->blog->model('blog_posts');
+		return $model->find_by_key($this->post_id);
 	}
 	
 	function is_duplicate()
@@ -275,6 +277,43 @@ class Blog_comment_model extends Base_module_record {
 	{
 		return date($format, strtotime($this->date_added));
 	}	
+
+	function is_spam()
+	{
+		if (!$this->spam_checked)
+		{
+			$this->check_is_spam();
+		}
+		return is_true_val($this->_fields['is_spam']);
+	}
+
+	function check_is_spam()
+	{
+		$this->is_spam = ($this->_CI->fuel->blog->is_spam($this)) ? 'yes' : 'no';
+		$this->spam_checked = TRUE;
+		return $this->is_spam;
+	}
+
+	function is_savable()
+	{
+		if (!isset($this->_CI->stopforumspam))
+		{
+			$this->_CI->load->module_library(BLOG_FOLDER, 'stopforumspam');
+		}
+
+		// if this has not been spam checked, we do so
+		if (!$this->spam_checked)
+		{
+			$this->check_is_spam();
+		}
+
+		if ($this->_CI->stopforumspam->is_ignorable())
+		{
+			return FALSE;
+		}
+
+		return !$this->is_spam() OR ($this->is_spam() AND $this->_CI->fuel->blog->config('save_spam'));
+	}
 	
 }
 ?>
