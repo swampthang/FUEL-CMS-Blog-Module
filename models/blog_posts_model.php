@@ -14,7 +14,7 @@ class Blog_posts_model extends Base_module_model {
 	public $linked_fields = array('slug' => array('title' => 'url_title'));
 	public $display_unpublished_if_logged_in = TRUE; // determines whether to display unpublished content on the front end if you are logged in to the CMS
 	public $boolean_fields = array('sticky');
-	public $foreign_keys = array('category_id' => array(FUEL_FOLDER => 'fuel_categories_model', 'where' => 'context = "blog" AND language = "{language}" OR language = ""'));
+	public $foreign_keys = array('category_id' => array(FUEL_FOLDER => 'fuel_categories_model', 'where' => '(context = "blog" OR context = "") AND language = "{language}" OR language = ""'));
 
 	public $has_many = array(
 		'tags' => array(
@@ -39,9 +39,9 @@ class Blog_posts_model extends Base_module_model {
 			$authors = array('authors' => array('model' => array(BLOG_FOLDER => 'blog_users')));
 			$this->has_many = array_merge($authors, $this->has_many);
 		}
-
-		$this->has_many['tags']['where'] = $this->_tables['fuel_categories'].'.context = "blog"';
-
+		$this->has_many['tags']['where'] = '(FIND_IN_SET("blog", '.$this->_tables['fuel_tags'].'.context) OR '.$this->_tables['fuel_tags'].'.context="")';
+		$this->foreign_keys['category_id']['where'] = '(FIND_IN_SET("blog", '.$this->_tables['fuel_categories'].'.context) OR '.$this->_tables['fuel_categories'].'.context="")';
+	
 		// set the filter again here just in case the table names are different
 		$this->filters = array('title', 'content_filtered', $this->_tables['fuel_users'].'.first_name', $this->_tables['fuel_users'].'.last_name');
 
@@ -216,7 +216,7 @@ class Blog_posts_model extends Base_module_model {
 		$fields['og_description'] = array('size' => 100);
 		$fields['og_image'] = array('img_styles' => 'float: left; width: 100px;', 'folder' => $CI->fuel->blog->config('asset_upload_path'));
 
-		$fields['category_id']['add_params'] = 'context=blog';
+		//$fields['category_id']['add_params'] = 'context=blog';
 
 		// find the first category with a context of "blog"
 		$blog_category = current($CI->fuel->categories->find_by_context('blog'));
@@ -224,7 +224,7 @@ class Blog_posts_model extends Base_module_model {
 		{
 			$fields['tags']['add_params'] = 'category_id='.$blog_category->id;	
 		}
-		
+		//$fields['tags']['add_params'] = 'context=blog';
 
 		// setup tabs
 		$fields['Content'] = array('type' => 'fieldset', 'class' => 'tab');
@@ -241,7 +241,7 @@ class Blog_posts_model extends Base_module_model {
 						'content',
 						'formatting',
 						'excerpt',
-						'author',
+						'author_id',
 						'published',
 						'Images', 
 						'main_image',
@@ -371,6 +371,7 @@ class Blog_post_model extends Base_module_record {
 
 	private $_tables;
 	public $author_name;
+
 	
 	function on_init()
 	{
@@ -455,15 +456,12 @@ class Blog_post_model extends Base_module_record {
 	
 	function get_comments_formatted($block = 'comment', $parent_id = 0, $container_class = 'child')
 	{
-		static $comments;
-		static $post;
 		
 		// initialization... grab all comments
 		$items = array();
-		if (empty($comments))
+		if (empty($this->_objs['comments']))
 		{
-			$comments = $this->comments;
-			$post = $this->post;
+			$comments = $this->_objs['comments'];
 		}
 
 		$str = '';
@@ -531,29 +529,50 @@ class Blog_post_model extends Base_module_record {
 		return NULL;
 	}
 
-	function get_author()
+	function get_author($all = FALSE)
 	{
-		static $author;
-		if (!isset($author))
+		$cache_key ='author'.$all;
+		if (!isset($this->_objs[$cache_key]))
 		{
 			if ($this->_CI->fuel->blog->config('multiple_authors'))
 			{
-				$authors = $this->get_authors();
-				$author = current($authors);
+				$authors_model = $this->get_authors(TRUE);
+				$where = array();
+				if (!$all)
+				{
+					$where[$this->_tables['blog_users'].'.active'] = 'yes';
+				}
+				$this->_objs[$cache_key] = $this->find_one($where);
 			}
 			else
 			{
-				$blog_users = $CI->fuel->blog->model('blog_users');
-				$author = $blog_users->find_one(array('fuel_blog_users.fuel_user_id' => $this->author_id));
+				$where = array($this->_tables['blog_users'].'.fuel_user_id' => $this->author_id);
+				if (!$all)
+				{
+					$where[$this->_tables['blog_users'].'.active'] = 'yes';
+				}
+				$this->_objs[$cache_key] = $this->lazy_load($where, array(BLOG_FOLDER => 'blog_users_model'), FALSE);
 			}
 		}
-		return $author;
+		return $this->_objs[$cache_key];
 	}
 
-	function has_author()
+
+	function has_author($active = FALSE)
 	{
-		$author = $this->get_author();
+		$author = $this->get_author($active);
 		return !empty($author);
+	}
+
+	function get_author_link()
+	{
+		$author = $this->get_author(TRUE);
+		if(is_true_val($author->active))
+		{
+			return '<a href="'.$author->url.'">'.$author->display_name.'</a>';
+		}else{
+			return $author->display_name;
+		}
 	}
 
 	function get_image($type = 'main')
