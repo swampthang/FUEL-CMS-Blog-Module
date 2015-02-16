@@ -10,14 +10,19 @@ if (isset($current_post) AND !$is_home)
 }
 ?>
 <?php $this->load->view('_blocks/header')?>
-	
-	<div id="right">
-		<?php echo $this->fuel->blog->sidemenu(array('search', 'authors', 'tags', 'categories', 'links', 'archives'))?>
-	</div>
+	<div class="bog-wrapper">
+	<div class="row">
+		<div class="medium-3" id="right">
+			<?php echo $this->fuel->blog->sidemenu(array('search', 'authors', 'tags', 'categories', 'links', 'archives'))?>
+		</div>
 
-	<div id="main_inner">
-		<?php echo fuel_var('body', ''); ?>
+		<div class="medium-9" id="main_inner">
+			<?php echo fuel_var('body', ''); ?>
+		</div>
 	</div>
+		
+	</div>
+	
 	
 	<div class="clear"></div>
 	

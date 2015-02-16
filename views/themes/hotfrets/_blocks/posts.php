@@ -1,48 +1,37 @@
-<div class="page">
+<div class="posts left">
+	<?=fuel_edit('create', 'Create Post', 'blog/posts')?>
+	<?php if (!empty($posts)) : ?>
+		<?php foreach($posts as $post) : ?>
+		<div class="post">
+			<?=fuel_edit($post)?>
 
-  <div class="top"><!-- --></div>
-  <?=fuel_edit('create', 'Create Post', 'blog/posts')?>
-  <?php if (!empty($posts)) : ?>
-  <?php foreach($posts as $post) : ?>
+			<?=blog_block('post_unpublished', array('post' => $post))?>
+		
+			<h2><a href="<?=$post->url?>"><?=$post->title?></a></h2> 
 
-    <?=fuel_edit($post)?>
-    <div class="entry-classic">
-      <?=fuel_edit($post)?>
+			<div class="post_date">
+				Published <?=$post->get_date_formatted(lang('blog_post_date_format'))?>
+				by <strong><span class="post_author_name"><?=$post->author_name?></span></strong>
+			</div>
 
-      <?=blog_block('post_unpublished', array('post' => $post))?>
-      <div class="list-img-holder">
-        <img src="<?php echo "/assets/images/blog/" . $post->list_image; ?>" alt="" class="frame wp-post-image alignleft">
-      </div>
-<div class="excert-holder">
-      <h2><a href="<?=$post->url?>" title="<?=$post->title?>"><span></span><?=$post->title?></a></h2>
-      <?php $categories = $post->get_categories_linked();
-      ?>
-      <span class="meta">Posted by <a href="/blog/authors/<?=$post->author_id?>" title="<?=$post->author_name?>"><?=$post->author_name?></a> on <?=$post->get_date_formatted('F')?> <?=$post->get_date_formatted('d')?>, <?=$post->get_date_formatted('Y')?> in <a href="#" title=""><?=$categories?></a></span>
-
-      <p><?=$post->excerpt_formatted?></p>
-
-      <a href="<?=$post->url?>" title="Read More">Read More</a>
+			<div class="post_content">
+				<?=$post->excerpt_formatted?> 
+			</div>
+			<div class="post_meta">
+				<?=$post->categories_linked ?> 
+			</div>
+		</div>
+		<div class="clear"></div>
+		<?php endforeach; ?>
+		
+		<div class="view_archives">
+			<div class="pagination"><?php if (!empty($pagination)) : ?><?=$pagination?>  &nbsp;<?php endif; ?></div>
+			Looking for older posts? <a href="<?=blog_url('archives')?>">View our Archives</a>
+		</div>
+		
+	<?php else: ?>
+	<div class="no_posts">
+		<p>There are no posts available.</p>
+	</div>
+	<?php endif; ?> 
 </div>
-      <div class="clear"></div>
-
-    </div><!-- .entry-classic (end) -->
-    <?php endforeach; ?>
-
-    <div class="wp-pagenavi">
-      <?php if (!empty($pagination)) : ?><?=$pagination?>  &nbsp;<?php endif; ?>
-      <!-- <span class="pages">Page 1 of 2</span>
-      <span class="current">1</span>
-      <a href="#" class="page">2</a>
-      <a href="#" class="nextpostslink">&raquo;</a> -->
-    </div>
-
-
-    <div class="bottom"><!-- --></div>
-    <?php else: ?>
-  <div class="no_posts">
-    <p>There are no posts available.</p>
-  </div>
-  <?php endif; ?> 
-
-</div>
-

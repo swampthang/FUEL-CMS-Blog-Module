@@ -3,26 +3,23 @@ fuel_set_var('body_class', 'blog');
 $current_post = $this->fuel->blog->current_post();
 if (isset($current_post) AND !$is_home)
 {
-	fuel_set_var('canonical', $post->url);	
+	fuel_set_var('canonical', $post->url);
+	if ($post->has_page_title()) fuel_set_var('page_title', $post->page_title);
+	if ($post->has_meta_description()) fuel_set_var('meta_description', $post->meta_description);
+	if ($post->has_meta_keywords()) fuel_set_var('meta_keywords', $post->meta_keywords);
 }
 ?>
 <?php $this->load->view('_blocks/header')?>
-
-	<div id="content">
-		<?php echo fuel_var('body', ''); ?>
+	<div class="content-wrapper">
+	<div class="row">
+		<div class="medium-9 columns" id="main_inner">
+			<?php echo fuel_var('body', ''); ?>
+		</div>
+		<div class="medium-3 columns" id="right">
+			<?php echo $this->fuel->blog->sidemenu(array('search', 'authors', 'tags', 'categories', 'links', 'archives'))?>
+		</div>
 	</div>
-
-	<div id="sidebar">
-	
-	<div id="sidebar-top"></div>
-
-
-		<?php echo $this->fuel->blog->sidemenu(array('search', 'categories', 'links', 'archives', 'authors'))?>
 		
-	
-	<div id="sidebar-bottom"></div>
-
-
 	</div>
 	
 	<div class="clear"></div>

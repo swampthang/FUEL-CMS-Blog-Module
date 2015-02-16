@@ -1,7 +1,7 @@
 <?php $authors = $CI->fuel->blog->get_users()?>
 <?php if (!empty($authors)) : ?>
-<div class="widget">
-	<h2>Authors</h2>
+<div class="blog_block">
+	<h3>Authors</h3>
 	<ul>
 		<?php foreach($authors as $author) : ?>
 		<li>
