@@ -1,9 +1,9 @@
 <div class="post">
-	<?=fuel_edit($post)?>
+	<?=fuel_var($post)?>
 	
 	<?=blog_block('post_unpublished', array('post' => $post))?>
 	
-	<h1><?=$post->title?> </h1>
+	<h1><?=fuel_edit($post->title)?> </h1>
 	<div class="post_author_date">
 		<?=lang('blog_post_published')?> 
 		<span class="post_content_date"><?=$post->get_date_formatted(lang('blog_post_date_format'))?></span> 
