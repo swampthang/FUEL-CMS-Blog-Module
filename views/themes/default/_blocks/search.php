@@ -1,7 +1,7 @@
 <div class="blog_search">
 	<form method="get" action="<?=$this->fuel->blog->url('search')?>">
 		<input type="text" name="q" value="" id="q">
-		<input type="button" value="Search" class="search_btn">
+		<input type="button" value="Search" class="search_btn button tiny radius">
 		
 		<?php
 		if ($this->config->item('csrf_protection')) :

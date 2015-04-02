@@ -1444,7 +1444,7 @@ class Fuel_blog extends Fuel_advanced_module {
 			}
 
 			if (!isset($blog_config['comment_form']['label_layout'])) $this->CI->form_builder->label_layout = 'left';
-			if (!isset($blog_config['comment_form']['submit_value'])) $this->CI->form_builder->submit_value = 'Submit Comment';
+			if (!isset($blog_config['comment_form']['submit_value'])) $this->CI->form_builder->submit_value = '<input type="submit" class="button radius" value="Submit Comment" />';
 			if (!isset($blog_config['comment_form']['use_form_tag'])) $this->CI->form_builder->use_form_tag = TRUE;
 			if (!isset($blog_config['comment_form']['display_errors'])) $this->CI->form_builder->display_errors = TRUE;
 			$this->CI->form_builder->form_attrs = 'method="post" action="'.site_url($this->CI->uri->uri_string()).'#comments_form"';
