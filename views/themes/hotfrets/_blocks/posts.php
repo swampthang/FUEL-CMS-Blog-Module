@@ -6,16 +6,17 @@
 			<?=fuel_edit($post)?>
 
 			<?=blog_block('post_unpublished', array('post' => $post))?>
-		
-			<h2><a href="<?=$post->url?>"><?=$post->title?></a></h2> 
-
-			<div class="post_date">
-				Published <?=$post->get_date_formatted(lang('blog_post_date_format'))?>
-				by <strong><span class="post_author_name"><?=$post->author_name?></span></strong>
-			</div>
 
 			<div class="post_content">
+				<h2><a href="<?=$post->url?>"><?=$post->title?></a></h2> 
+				<div class="img-right frame thumbnail">
+					<img src="/assets/images/blog/<?=$post->thumbnail_image?>" />
+				</div><div class="post_date">
+					Published <?=$post->get_date_formatted(lang('blog_post_date_format'))?>
+					by <strong><span class="post_author_name"><?=$post->author_name?></span></strong>
+				</div>
 				<?=$post->excerpt_formatted?> 
+				
 			</div>
 			<div class="post_meta">
 				<?=$post->categories_linked ?> 
